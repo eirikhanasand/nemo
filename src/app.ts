@@ -123,6 +123,7 @@ client.on(Events.MessageReactionAdd, async (reaction: MessageReaction, user: Use
         return
     }
 
+    console.log("detected add")
     deleteAndRecreate(reaction.message.channel)
 })
 
@@ -142,6 +143,7 @@ client.on(Events.MessageReactionRemove, async (reaction: MessageReaction, user: 
         return
     }
 
+    console.log("detected remove")
     deleteAndRecreate(reaction.message.channel)
 })
 
