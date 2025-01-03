@@ -1,7 +1,7 @@
 {
-    "name": "hayday-bot",
+    "name": "nemo",
     "version": "2.1.0",
-    "description": "Hayday Bot",
+    "description": "HayDay Bot",
     "main": "src/app.js",
     "type": "module",
     "scripts": {
@@ -10,7 +10,7 @@
         "prod": "node dist/src/app.js",
         "fast": "tsc && node dist/src/app.js"
     },
-    "author": "Login - Linjeforeningen for IT",
+    "author": "Eirik Hanasand",
     "license": "MIT",
     "dependencies": {
         "discord.js": "^14.16.1",

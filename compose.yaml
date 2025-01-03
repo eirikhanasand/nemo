@@ -1,5 +1,5 @@
 services:
-  hayday-bot:
+  nemo:
     build:
       context: .
       dockerfile: Dockerfile
