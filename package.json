@@ -1,0 +1,23 @@
+{
+    "name": "hayday-bot",
+    "version": "2.1.0",
+    "description": "Hayday Bot",
+    "main": "src/app.js",
+    "type": "module",
+    "scripts": {
+        "start": "rm -rf dist; tsc; node dist/src/deploy-commands.js; node dist/src/app.js",
+        "build": "tsc",
+        "prod": "node dist/src/app.js",
+        "fast": "tsc && node dist/src/app.js"
+    },
+    "author": "Login - Linjeforeningen for IT",
+    "license": "MIT",
+    "dependencies": {
+        "discord.js": "^14.16.1",
+        "dotenv": "^16.4.5"
+    },
+    "devDependencies": {
+        "@types/node": "^20.11.14",
+        "typescript": "^5.3.3"
+    }
+}

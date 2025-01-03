@@ -1,0 +1,7 @@
+services:
+  hayday-bot:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - .:/app
