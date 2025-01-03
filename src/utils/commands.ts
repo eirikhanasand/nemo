@@ -5,6 +5,7 @@ const page1 = [
     "info                                     Info about the bot",
     "ping                                    Pings the bot",
     "version                              Displays the bots version number",
+    "mining                               Calculates how many mining tools you need",
 ]
 
 const pages = [page1]
