@@ -7,7 +7,10 @@ export default async function appendReaction(message: Message, reactions: string
         const reactionContent = content.find((a) => a.includes(reaction.emoji.name || ''))
         for (const [,author] of users) {
             const member = await message.guild?.members.fetch(author.id)
-            const nickname = member?.nickname || author.username;
+            const nickname = member?.nickname || author.username
+            if (nickname.includes('VictoryBot')) {
+                continue
+            }
             messages += `${nickname}\n`
             reactions += `${reactionContent?.replaceAll(`/${reaction.emoji.name}/g`, `<${reaction.emoji.name}:${reaction.emoji.id}`)}\n`
         }
