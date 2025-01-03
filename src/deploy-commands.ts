@@ -58,7 +58,10 @@ const rest = new REST({ version: '10' }).setToken(token)
 
         // Refreshing all commands
         const data = await rest.put(
-            Routes.applicationGuildCommands(clientId, "1009088317104586762"),
+            // prod 1009088317104586762
+            // test 1038492204827672637
+            Routes.applicationCommands(clientId),
+            // Routes.applicationGuildCommands(clientId, "1009088317104586762"),
             { body: commands }
         ) as RestData[]
 
