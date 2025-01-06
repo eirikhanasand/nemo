@@ -23,10 +23,12 @@ import getID from './utils/getID.js'
 import { PREPARATION_CHANNEL_NAME } from '../constants.js'
 import deleteAndRecreate from './utils/deleteAndRecreate.js'
 
+global.preppedTasks = new Map
+global.finished = new Map
+
 const token = config.token
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
-
 const client = new Client({ 
     intents: [
         GatewayIntentBits.Guilds,
@@ -66,9 +68,10 @@ client.once(Events.ClientReady, async () => {
     for (const [, guild] of client.guilds.cache) {
         try {
             const channels = await guild.channels.fetch()
-
             for (const [, channel] of channels) {
-                deleteAndRecreate(channel)
+                if (channel?.isTextBased() && ('name' in channel) && channel?.name?.includes('prepped-tasks')) {
+                    deleteAndRecreate(channel)
+                }
             }
         } catch (error) {
             console.error(`Failed to fetch channels for guild ${guild.name}:`, error)
@@ -148,7 +151,10 @@ client.on(Events.MessageReactionRemove, async (reaction: MessageReaction, user: 
 })
 
 client.on(Events.MessageCreate, async (message: Message) => {
-    deleteAndRecreate(message.channel)
+    console.log("message created, deleteAndRecreate called")
+    if (message.channel instanceof TextChannel) {
+        deleteAndRecreate(message.channel)
+    }
 })
 
 client.login(token)
