@@ -5,7 +5,6 @@ import react from "./react.js"
 
 export async function nextPage(interaction: ButtonInteraction) {
     const page = extractPageNumberFromEmbed(interaction.message.embeds[0])
-    const nextPage = page
     const embeds = global.preppedTasks.get(interaction.channelId)
 
     if (!embeds) {
@@ -13,8 +12,12 @@ export async function nextPage(interaction: ButtonInteraction) {
         return
     }
 
-    const newButtons = getButtons(nextPage, embeds?.length || 0)
-    await interaction.update({ embeds: [embeds[nextPage]], components: newButtons })
+    const newPage = embeds[page]
+    const newButtons = getButtons(page, embeds?.length || 0)
+    const reactions = getReactionsFromEmbedFields(newPage.data.fields || [])
+    await interaction.update({ embeds: [newPage], components: newButtons })
+    interaction.message.reactions.removeAll()
+    react(interaction.message, reactions)
 }
 
 export async function previousPage(interaction: ButtonInteraction) {
@@ -28,10 +31,10 @@ export async function previousPage(interaction: ButtonInteraction) {
     }
     
     const newPage = embeds[previousPage]
-    const reactions = getReactionsFromEmbedFields(embeds[previousPage].data.fields || [])
+    const reactions = getReactionsFromEmbedFields(newPage.data.fields || [])
     const newButtons = getButtons(previousPage, embeds?.length || 0)
     await interaction.update({ embeds: [newPage], components: newButtons })
-    console.log("Reactions: ", reactions)
+    interaction.message.reactions.removeAll()
     react(interaction.message, reactions)
 }
 
@@ -43,4 +46,3 @@ function extractPageNumberFromEmbed(embed: Embed): number {
 
     return 0
 }
-

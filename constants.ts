@@ -1,1 +1,1 @@
-export const PREPARATION_CHANNEL_NAME = 'prepped-tasks'
+export const PREPARATION_CHANNEL_FORMAT = 'prepped-tasks'
