@@ -1,0 +1,46 @@
+import { ButtonInteraction, Embed } from "discord.js"
+import getButtons from "./buttons.js"
+import getReactionsFromEmbedFields from "./getReactionsFromEmbedField.js"
+import react from "./react.js"
+
+export async function nextPage(interaction: ButtonInteraction) {
+    const page = extractPageNumberFromEmbed(interaction.message.embeds[0])
+    const nextPage = page
+    const embeds = global.preppedTasks.get(interaction.channelId)
+
+    if (!embeds) {
+        console.error(`Tried going to the next page in ${interaction.channelId}, but found no embeds.`)
+        return
+    }
+
+    const newButtons = getButtons(nextPage, embeds?.length || 0)
+    await interaction.update({ embeds: [embeds[nextPage]], components: newButtons })
+}
+
+export async function previousPage(interaction: ButtonInteraction) {
+    const page = extractPageNumberFromEmbed(interaction.message.embeds[0])
+    const previousPage = page - 2
+    const embeds = global.preppedTasks.get(interaction.channelId)
+    
+    if (!embeds) {
+        console.error(`Tried going to the previous page in ${interaction.channelId}, but found no embeds.`)
+        return
+    }
+    
+    const newPage = embeds[previousPage]
+    const reactions = getReactionsFromEmbedFields(embeds[previousPage].data.fields || [])
+    const newButtons = getButtons(previousPage, embeds?.length || 0)
+    await interaction.update({ embeds: [newPage], components: newButtons })
+    console.log("Reactions: ", reactions)
+    react(interaction.message, reactions)
+}
+
+function extractPageNumberFromEmbed(embed: Embed): number {
+    const match = embed.data.title?.match(/Prepped tasks (\d+) \/ \d+/)
+    if (match && match[1]) {
+        return parseInt(match[1], 10)
+    }
+
+    return 0
+}
+

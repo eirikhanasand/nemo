@@ -1,5 +1,5 @@
 const page1 = [
-    "The command name provided is not available. ",
+    "Use /help command:<command_name> for help with a specific command.",
     "Available commands are:",
     "help                                    Help for the help command",
     "info                                     Info about the bot",
