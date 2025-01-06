@@ -1,4 +1,4 @@
-import { Role } from "discord.js"
+import { EmbedBuilder, Role } from "discord.js"
 
 declare module 'discord.js' {
     interface Reaction {
@@ -13,4 +13,9 @@ declare module 'discord.js' {
 
 export interface Roles {
     cache: Role[]
+}
+
+declare global {
+    var preppedTasks: Map<string, EmbedBuilder[]>
+    var finished: Map<string, boolean>
 }
