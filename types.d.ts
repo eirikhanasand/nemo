@@ -11,3 +11,9 @@ type RestData = {
     guild_id: string
     nsfw: boolean
 }
+
+type Field = {
+    name: string
+    value: string
+    inline?: boolean
+}
