@@ -1,6 +1,6 @@
 {
     "name": "nemo",
-    "version": "2.1.0",
+    "version": "0.0.1",
     "description": "HayDay Bot",
     "main": "src/app.js",
     "type": "module",
