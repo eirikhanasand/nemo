@@ -4,6 +4,7 @@ import { Reaction } from "../../interfaces.js"
 import getButtons from "./buttons.js"
 import getReactionsFromEmbedFields from "./getReactionsFromEmbedField.js"
 import react from "./react.js"
+import combineValues from "./combineValues.js"
 
 export default async function restructureEmbeds(reaction: MessageReaction, user: User, action: Reaction) {
     const embeds = global.preppedTasks.get(reaction.message.channelId)
@@ -39,13 +40,13 @@ export default async function restructureEmbeds(reaction: MessageReaction, user:
         tempEmbeds.push(...newEmbeds)
     }
 
-    const newEmbeds = tempEmbeds.sort((a, b) => a.name.localeCompare(b.name))
-    const restructuredEmbeds = createEmbeds(newEmbeds)
+    const combinedFields = combineValues(tempEmbeds).sort((a, b) => a.name.localeCompare(b.name))
+    const restructuredEmbeds = createEmbeds(combinedFields)
     global.preppedTasks.set(reaction.message.channelId, restructuredEmbeds)
     const lastMessage = await reaction.message.channel.messages.fetch((reaction.message.channel as TextChannel).lastMessageId || "")
-    const components = getButtons(0, newEmbeds.length / 10)
+    const components = getButtons(0, combinedFields.length / 10)
     lastMessage.edit({ embeds: [restructuredEmbeds[0]], components })
-    const reactions = getReactionsFromEmbedFields(newEmbeds || [])
+    const reactions = getReactionsFromEmbedFields(combinedFields || [])
     lastMessage.reactions.removeAll()
     react(lastMessage, reactions.slice(0, 10))
 }
