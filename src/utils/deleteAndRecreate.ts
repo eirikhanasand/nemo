@@ -1,66 +1,124 @@
-import { Channel, EmbedBuilder, PermissionsBitField, TextChannel } from "discord.js"
+import { EmbedBuilder, Message, PermissionsBitField, TextChannel } from "discord.js"
 import appendReaction from "./appendReaction.js"
+import combineValues from "./combineValues.js"
+import createEmbeds from "./createEmbeds.js"
+import getButtons from "./buttons.js"
+import react from "./react.js"
+import getReactionsFromEmbedFields from "./getReactionsFromEmbedField.js"
+import editOnlyIfWithinASecond from "./editOnlyIfWithinASecond.js"
 
-type Field = {
-    name: string
-    value: string
-    inline?: true
-}
-
-export default async function deleteAndRecreate(channel: Channel) {
-    if (!channel?.isTextBased() || !('name' in channel) || !channel?.name?.includes('prepped-tasks')) {
-        return
-    }
-
+export default async function deleteAndRecreate(channel: TextChannel) {
     const textChannel = channel as TextChannel
     const me = textChannel.guild.members.me
-    const permissions = me ? textChannel.permissionsFor(me) : undefined
-    
+    const permissions = me ? textChannel.permissionsFor(me) : undefined    
     if (!permissions?.has([PermissionsBitField.Flags.ViewChannel, PermissionsBitField.Flags.ReadMessageHistory])) {
-        console.log(`Skipped ${textChannel.name}, no access.`)
+        console.error(`Skipped ${textChannel.name}, no access.`)
         return
     }
+    console.log(`Continued with ${textChannel.name}...`)
     
-    console.log(`Continued with ${textChannel.name}.`)
-    const messages = await textChannel.messages.fetch({ limit: 25 })
-    const lastmessage = textChannel.lastMessageId
+    const messages = (await textChannel.messages.fetch({ limit: 25 })).reverse()
+    let lastMessage = await textChannel.messages.fetch("")
+    global.finished.set(channel.id, false)
+
+    try {
+        lastMessage = await textChannel.messages.fetch(textChannel.lastMessageId || "")
+    } catch (error) {
+        console.error(`Unable to edit last message in ${textChannel.name}. Continuing without editing.`)
+    }
+
+    if (lastMessage) {
+        const relevant = Array.isArray(lastMessage.embeds) ? lastMessage.embeds[0] : null
+        const needsToBeEditedWhileRestarting = relevant?.title?.includes("Prepped tasks") ? lastMessage : null
+        if (needsToBeEditedWhileRestarting) {
+            const embeds = lastMessage.embeds
+            const updatedEmbeds = { 
+                embeds: [{
+                    ...embeds[0].data, 
+                    description: `Reloading (0s)...\nEstimated time remaining: 180s`
+                }, ...embeds.slice(1)], 
+                components: []
+            }
+            await lastMessage.edit(updatedEmbeds)
+            console.log("called updateEverySecondWhileReloading")
+            updateEverySecondWhileReloading(lastMessage)
+        }
+    }
+
     let exists = null
     const fields: Field[] = []
     
-    console.log("before messages", messages.size)
     for (const [, message] of messages) {
-        if (message.id === lastmessage) {
-            exists = message.embeds.find(embed => embed.title === 'Prepped tasks') ? message : null
+        if (message.id === lastMessage?.id) {
+            const relevant = message.embeds[0]
+            exists = relevant.title?.includes("Prepped tasks") ? message : null
             continue
         }
         
         if (message.embeds.length > 0) {
-            const embedWithPreppedTasks = message.embeds.find(embed => embed.title === 'Prepped tasks')
+            const embedWithPreppedTasks = message.embeds.find(embed => embed.title?.includes("Prepped tasks"))
             if (embedWithPreppedTasks) {
                 await message.delete()
-                console.log(`Deleted a message with embed titled "Prepped tasks" in channel ${channel.name}`)
+                console.error(`Deleted outdated tasks in ${channel.name}.`)
             }
         }
 
-        const field = await appendReaction(message)
-        if (field.name.length > 0 && field.value.length > 0) {
-            fields.push(field)
+        const newFields = await appendReaction(message)
+        if (newFields.length > 0) {
+            fields.push(...newFields)
         }
     }
 
-    if (fields.length > 10) {
-        fields.forEach((field) => field = {...field, inline: true})
-    }
-    
-    const embed = new EmbedBuilder()
-        .setTitle('Prepped tasks')
-        .setColor("#fd8738")
-        .setTimestamp()
-        .addFields(fields.length > 0 ? fields : [{name: "🕥 No tasks prepared yet...", value: " ", inline: true}])
+    global.finished.set(channel.id, true)
+    const combinedFields = combineValues(fields)
+    const embeds = createEmbeds(combinedFields)
+    global.preppedTasks.set(channel.id, embeds)
+
+    setTimeout(async() => {
+        console.log("sending", embeds)
+        const message = await send(embeds, textChannel, exists, 0)
+        const reactions = getReactionsFromEmbedFields(embeds[0].data.fields || [])
+        react(message, reactions)
+    }, 400)
+    console.log(`Finished reloading prepped tasks in ${channel.name}`)
+}
+
+async function send(embeds: EmbedBuilder[], textChannel: TextChannel, exists: Message<true> | null, page: number) {
+    const components = getButtons(page, embeds.length)
+
     if (!exists) {
-        console.log("f", channel.name)
-        await textChannel.send({ embeds: [embed]})
+        const message = await textChannel.send({ embeds: [embeds[0]], components })
+        return message
     } else {
-        await exists.edit({ embeds: [embed]})
+        await exists.edit({ embeds: [embeds[0]], components })
+        return exists
     }
+}
+
+function updateEverySecondWhileReloading(message: Message<true>) {
+    const embeds = message.embeds
+    let startTime = new Date().getTime()
+    // logs twice (one for each of the channels)
+    console.log("creating interval")
+    const interval = setInterval(() => {
+        const diff = Math.floor((new Date().getTime() - startTime) / 1000)
+        message.edit({ embeds: [{
+            ...embeds[0].data, 
+            description: embeds[0].description?.
+            replace(/(\d+s)/g, `${diff}s`)
+            .replace(/: \d+s/, `: ${180 - diff}s`)
+        }, ...embeds.slice(1)]})
+        console.log("channelId inaccurate?", message.channelId, message.channel.id)
+        const done = global.finished.get(message.channelId)
+        // done is false for the first like 200 seconds, then becomes true
+        console.log("before entering", done)
+        if (done) {
+            clearInterval(interval)
+            message.edit({ embeds: [{
+                ...embeds[0].data,
+                description: undefined
+            }, ...embeds.slice(1)]})
+            console.log(`Stopped updating ${message.channel.name}, ${done}`)
+        }
+    }, 10000)
 }

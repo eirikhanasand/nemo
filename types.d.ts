@@ -17,3 +17,8 @@ type Field = {
     value: string
     inline?: boolean
 }
+
+enum Reaction {
+    Add,
+    Remove
+}
