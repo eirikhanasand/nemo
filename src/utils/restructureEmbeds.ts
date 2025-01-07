@@ -44,7 +44,7 @@ export default async function restructureEmbeds(reaction: MessageReaction, user:
     const restructuredEmbeds = createEmbeds(combinedFields)
     global.preppedTasks.set(reaction.message.channelId, restructuredEmbeds)
     const lastMessage = await reaction.message.channel.messages.fetch((reaction.message.channel as TextChannel).lastMessageId || "")
-    const components = getButtons(0, combinedFields.length / 10)
+    const components = getButtons(0, combinedFields.length / 10 - 1)
     lastMessage.edit({ embeds: [restructuredEmbeds[0]], components })
     const reactions = getReactionsFromEmbedFields(combinedFields || [])
     lastMessage.reactions.removeAll()
