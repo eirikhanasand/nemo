@@ -3,6 +3,7 @@ import { fileURLToPath } from 'url'
 import { join, dirname } from 'path'
 import config from './utils/config.js'
 import { 
+    ActivityType,
     ChatInputCommandInteraction, 
     Client, 
     Collection, 
@@ -46,6 +47,10 @@ const client = new Client({
         Partials.Reaction,
         Partials.User,
     ],
+    presence: {
+        activities: [{ type: ActivityType.Playing, name: "Hay Day" }],
+        status: "online",
+    },
 }) as any
 
 client.commands = new Collection()

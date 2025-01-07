@@ -11,8 +11,8 @@ export async function execute(message: ChatInputCommandInteraction) {
         .setTimestamp()
         .addFields(
             {name: "Created", value: "03.01.25", inline: true},
-            {name: "Updated", value: "03.01.25", inline: true},
-            { name: " ", value: " ", inline: false },
+            {name: "Updated", value: "07.01.25", inline: true},
+            { name: "Source code", value: "https://github.com/eirikhanasand/nemo", inline: false },
         )
 
     await message.reply({ embeds: [embed]})
