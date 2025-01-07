@@ -47,7 +47,7 @@ export default async function restructureEmbeds(reaction: MessageReaction, user:
     lastMessage.edit({ embeds: [restructuredEmbeds[0]], components })
     const reactions = getReactionsFromEmbedFields(newEmbeds || [])
     lastMessage.reactions.removeAll()
-    react(lastMessage, reactions)
+    react(lastMessage, reactions.slice(0, 10))
 }
 
 function removeReaction(value: string, id: string) {
