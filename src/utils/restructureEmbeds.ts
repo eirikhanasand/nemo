@@ -8,7 +8,6 @@ import combineValues from "./combineValues.js"
 
 export default async function restructureEmbeds(reaction: MessageReaction, user: User, action: Reaction) {
     const embeds = global.preppedTasks.get(reaction.message.channelId)
-    
     if (!embeds) {
         console.error(`Tried going to the previous page in ${reaction.message.channelId}, but found no embeds.`)
         return
@@ -44,7 +43,7 @@ export default async function restructureEmbeds(reaction: MessageReaction, user:
     const restructuredEmbeds = createEmbeds(combinedFields)
     global.preppedTasks.set(reaction.message.channelId, restructuredEmbeds)
     const lastMessage = await reaction.message.channel.messages.fetch((reaction.message.channel as TextChannel).lastMessageId || "")
-    const components = getButtons(0, combinedFields.length / 10 - 1)
+    const components = getButtons(0, restructuredEmbeds.length)
     lastMessage.edit({ embeds: [restructuredEmbeds[0]], components })
     const reactions = getReactionsFromEmbedFields(combinedFields || [])
     lastMessage.reactions.removeAll()
@@ -52,7 +51,7 @@ export default async function restructureEmbeds(reaction: MessageReaction, user:
 }
 
 function removeReaction(value: string, id: string) {
-    const oldValues = value.split(' ')
+    const oldValues = value.split('\n')
     const newValues = []
     
     for (const value of oldValues) {

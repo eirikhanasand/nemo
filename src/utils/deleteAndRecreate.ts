@@ -75,8 +75,7 @@ export default async function deleteAndRecreate(channel: TextChannel) {
     setTimeout(async() => {
         const page = (Number((exists?.embeds[0].title?.match(/\d/) || [0])[0]) || 1) - 1
         await send(embeds, textChannel, exists, page)
-    }, 400)
-    console.log(`Finished reloading prepped tasks in ${channel.name}`)
+    }, 5050)
 }
 
 async function send(embeds: EmbedBuilder[], textChannel: TextChannel, exists: Message<true> | null, page: number) {
