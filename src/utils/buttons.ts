@@ -23,5 +23,5 @@ export default function getButtons(page: number, pages: number) {
         buttons.addComponents(next)
     }
 
-    return [buttons]
+    return buttons.components.length ? [buttons] : undefined
 }
