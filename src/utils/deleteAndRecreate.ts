@@ -5,7 +5,6 @@ import createEmbeds from "./createEmbeds.js"
 import getButtons from "./buttons.js"
 import react from "./react.js"
 import getReactionsFromEmbedFields from "./getReactionsFromEmbedField.js"
-import editOnlyIfWithinASecond from "./editOnlyIfWithinASecond.js"
 
 export default async function deleteAndRecreate(channel: TextChannel) {
     const textChannel = channel as TextChannel
@@ -40,7 +39,6 @@ export default async function deleteAndRecreate(channel: TextChannel) {
                 components: []
             }
             await lastMessage.edit(updatedEmbeds)
-            console.log("called updateEverySecondWhileReloading")
             updateEverySecondWhileReloading(lastMessage)
         }
     }
@@ -75,31 +73,30 @@ export default async function deleteAndRecreate(channel: TextChannel) {
     global.preppedTasks.set(channel.id, embeds)
 
     setTimeout(async() => {
-        console.log("sending", embeds)
-        const message = await send(embeds, textChannel, exists, 0)
-        const reactions = getReactionsFromEmbedFields(embeds[0].data.fields || [])
-        react(message, reactions)
+        const page = (Number((exists?.embeds[0].title?.match(/\d/) || [0])[0]) || 1) - 1
+        await send(embeds, textChannel, exists, page)
     }, 400)
     console.log(`Finished reloading prepped tasks in ${channel.name}`)
 }
 
 async function send(embeds: EmbedBuilder[], textChannel: TextChannel, exists: Message<true> | null, page: number) {
     const components = getButtons(page, embeds.length)
+    const reactions = getReactionsFromEmbedFields(embeds[0].data.fields || [])
 
     if (!exists) {
         const message = await textChannel.send({ embeds: [embeds[0]], components })
-        return message
+        message.reactions.removeAll()
+        react(message, reactions)
     } else {
         await exists.edit({ embeds: [embeds[0]], components })
-        return exists
+        exists.reactions.removeAll()
+        react(exists, reactions)
     }
 }
 
 function updateEverySecondWhileReloading(message: Message<true>) {
     const embeds = message.embeds
     let startTime = new Date().getTime()
-    // logs twice (one for each of the channels)
-    console.log("creating interval")
     const interval = setInterval(() => {
         const diff = Math.floor((new Date().getTime() - startTime) / 1000)
         message.edit({ embeds: [{
@@ -108,17 +105,13 @@ function updateEverySecondWhileReloading(message: Message<true>) {
             replace(/(\d+s)/g, `${diff}s`)
             .replace(/: \d+s/, `: ${180 - diff}s`)
         }, ...embeds.slice(1)]})
-        console.log("channelId inaccurate?", message.channelId, message.channel.id)
         const done = global.finished.get(message.channelId)
-        // done is false for the first like 200 seconds, then becomes true
-        console.log("before entering", done)
         if (done) {
             clearInterval(interval)
             message.edit({ embeds: [{
                 ...embeds[0].data,
                 description: undefined
             }, ...embeds.slice(1)]})
-            console.log(`Stopped updating ${message.channel.name}, ${done}`)
         }
-    }, 10000)
+    }, 5000)
 }

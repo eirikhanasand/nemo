@@ -19,3 +19,8 @@ declare global {
     var preppedTasks: Map<string, EmbedBuilder[]>
     var finished: Map<string, boolean>
 }
+
+export enum Reaction {
+    Add,
+    Remove
+}

@@ -24,6 +24,7 @@ import getID from './utils/getID.js'
 import { PREPARATION_CHANNEL_FORMAT } from '../constants.js'
 import deleteAndRecreate from './utils/deleteAndRecreate.js'
 import restructureEmbeds from './utils/restructureEmbeds.js'
+import { Reaction } from '../interfaces.js'
 
 global.preppedTasks = new Map
 global.finished = new Map
@@ -72,7 +73,7 @@ client.once(Events.ClientReady, async () => {
             const channels = await guild.channels.fetch()
             for (const [, channel] of channels) {
                 if (channel?.isTextBased() && ('name' in channel) && channel?.name?.includes('prepped-tasks')) {
-                    // deleteAndRecreate(channel)
+                    deleteAndRecreate(channel)
                 }
             }
         } catch (error) {
@@ -134,16 +135,18 @@ client.on(Events.MessageReactionAdd, async (reaction: MessageReaction, user: Use
             if (reaction.message.author.id !== user.id) {
                 reaction.users.remove(user)
                 const task = reaction.message.embeds[0].fields.find((field) => field.name.includes(name))?.name || "❌ Unknown"
+                const names = reaction.message.embeds[0].fields.find((field) => field.name.includes(name))?.value || "❌ Unknown"
+                const formattedNames = names.split('\n').join(' ')
                 const embed = new EmbedBuilder()
                     .setTitle(task)
                     .setDescription(`Task ready according to <@${user.id}>!`)
                     .setColor('#fd8732')
                     .setTimestamp()
                 
-                const channelName = reaction.message.channel.name.split('-')[0]
+                const channelName = (reaction.message.channel.name.match(/[a-z|A-Z]+/) || [])[0]
                 const derbyChannel = reaction.message.guild?.channels.cache.find((channel) => channel.name.endsWith(`${channelName}-derby`)) as TextChannel
                 if (derbyChannel) {
-                    derbyChannel.send({content: `<@${user.id}>`, embeds: [embed]})
+                    derbyChannel.send({content: formattedNames, embeds: [embed]})
                 } else {
                     console.error(`Found no channel named ${channelName}-derby. Unable to ping.`)
                 }
@@ -151,7 +154,7 @@ client.on(Events.MessageReactionAdd, async (reaction: MessageReaction, user: Use
             return
         }
         
-        restructureEmbeds(reaction, Reaction.Add)
+        restructureEmbeds(reaction, user, Reaction.Add)
     }
 })
 
@@ -171,7 +174,7 @@ client.on(Events.MessageReactionRemove, async (reaction: MessageReaction, user: 
         return
     }
 
-    restructureEmbeds(reaction, Reaction.Add)
+    restructureEmbeds(reaction, user, Reaction.Remove)
 })
 
 client.on(Events.MessageCreate, async (message: Message) => {
