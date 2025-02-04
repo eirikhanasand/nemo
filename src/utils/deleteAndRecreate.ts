@@ -39,8 +39,10 @@ export default async function deleteAndRecreate(channel: TextChannel) {
                 components: []
             }
             await lastMessage.edit(updatedEmbeds)
-            updateEverySecondWhileReloading(lastMessage)
+            updateEvery5SecondsWhileReloading(lastMessage)
         }
+    } else {
+        updateEvery5SecondsWhileReloading(undefined)
     }
 
     let exists = null
@@ -93,24 +95,28 @@ async function send(embeds: EmbedBuilder[], textChannel: TextChannel, exists: Me
     }
 }
 
-function updateEverySecondWhileReloading(message: Message<true>) {
-    const embeds = message.embeds
+function updateEvery5SecondsWhileReloading(message: Message<true> | undefined) {
+    const embeds = message?.embeds || undefined
     let startTime = new Date().getTime()
     const interval = setInterval(() => {
         const diff = Math.floor((new Date().getTime() - startTime) / 1000)
-        message.edit({ embeds: [{
-            ...embeds[0].data, 
-            description: embeds[0].description?.
-            replace(/(\d+s)/g, `${diff}s`)
-            .replace(/: \d+s/, `: ${180 - diff}s`)
-        }, ...embeds.slice(1)]})
-        const done = global.finished.get(message.channelId)
-        if (done) {
-            clearInterval(interval)
+        if (message && embeds) {
             message.edit({ embeds: [{
-                ...embeds[0].data,
-                description: undefined
+                ...embeds[0].data, 
+                description: embeds[0].description?.
+                replace(/(\d+s)/g, `${diff}s`)
+                .replace(/: \d+s/, `: ${180 - diff}s`)
             }, ...embeds.slice(1)]})
+            const done = global.finished.get(message.channelId)
+            if (done) {
+                clearInterval(interval)
+                message.edit({ embeds: [{
+                    ...embeds[0].data,
+                    description: undefined
+                }, ...embeds.slice(1)]})
+            }
+        } else {
+            console.log(`${diff}s elapsed. Estimated time 180s (~ ${180 - diff} remaining).`)
         }
     }, 5000)
 }
