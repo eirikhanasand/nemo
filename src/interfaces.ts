@@ -20,7 +20,10 @@ declare global {
     var finished: Map<string, boolean>
 }
 
-export enum Reaction {
-    Add,
-    Remove
-}
+export const Reaction = {
+  Add: "Add",
+  Remove: "Remove",
+} as const
+
+export type Reaction = typeof Reaction[keyof typeof Reaction]
+

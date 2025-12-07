@@ -1,31 +1,33 @@
 import { readdirSync } from 'fs'
 import { fileURLToPath } from 'url'
 import { join, dirname } from 'path'
-import config from './utils/config.js'
-import { 
+import config from '#config'
+import {
     ActivityType,
-    ChatInputCommandInteraction, 
-    Client, 
-    Collection, 
-    EmbedBuilder, 
-    Events, 
-    GatewayIntentBits, 
-    Interaction, 
-    InteractionType, 
-    Message, 
-    MessageReaction, 
-    Partials, 
-    TextChannel, 
-    User 
+    Client,
+    Collection,
+    EmbedBuilder,
+    Events,
+    GatewayIntentBits,
+    InteractionType,
+    Partials,
+    TextChannel
 } from 'discord.js'
-import handleComponents from './utils/handleComponents.js'
-import validCommands from './utils/valid.js'
-import Autocomplete from './utils/autoComplete.js'
-import getID from './utils/getID.js'
-import { PREPARATION_CHANNEL_FORMAT } from '../constants.js'
-import deleteAndRecreate from './utils/deleteAndRecreate.js'
-import restructureEmbeds from './utils/restructureEmbeds.js'
-import { Reaction } from '../interfaces.js'
+import type {
+    ChatInputCommandInteraction,
+    Interaction,
+    Message,
+    MessageReaction,
+    User
+} from 'discord.js'
+import handleComponents from '#utils/handleComponents.ts'
+import validCommands from '#utils/valid.ts'
+import Autocomplete from '#utils/autoComplete.ts'
+import getID from '#utils/getID.ts'
+import { PREPARATION_CHANNEL_FORMAT } from '#constants'
+import deleteAndRecreate from '#utils/deleteAndRecreate.ts'
+import restructureEmbeds from '#utils/restructureEmbeds.ts'
+import { Reaction } from '#interfaces'
 
 global.preppedTasks = new Map
 global.finished = new Map
@@ -33,7 +35,7 @@ global.finished = new Map
 const token = config.token
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
-const client = new Client({ 
+const client = new Client({
     intents: [
         GatewayIntentBits.Guilds,
         GatewayIntentBits.GuildMessages,
@@ -58,17 +60,17 @@ const foldersPath = join(__dirname, 'commands')
 const commandFolders = readdirSync(foldersPath)
 
 for (const folder of commandFolders) {
-	const commandsPath = join(foldersPath, folder)
-	const commandFiles = readdirSync(commandsPath).filter(file => file.endsWith('.js'))
-	for (const file of commandFiles) {
-		const filePath = join(commandsPath, file)
+    const commandsPath = join(foldersPath, folder)
+    const commandFiles = readdirSync(commandsPath).filter(file => file.endsWith('.js'))
+    for (const file of commandFiles) {
+        const filePath = join(commandsPath, file)
         const command = await import(filePath)
-		if ('data' in command && 'execute' in command) {
-			client.commands.set(command.data.name, command)
-		} else {
-			console.warn(`[WARNING] The command at ${filePath} is missing a required "data" or "execute" property.`)
-		}
-	}
+        if ('data' in command && 'execute' in command) {
+            client.commands.set(command.data.name, command)
+        } else {
+            console.warn(`[WARNING] The command at ${filePath} is missing a required "data" or "execute" property.`)
+        }
+    }
 }
 
 client.once(Events.ClientReady, async () => {
@@ -97,7 +99,7 @@ client.on(Events.InteractionCreate, async (interaction: Interaction<"cached">) =
 
     const chatInteraction = interaction as ChatInputCommandInteraction
 
-	if (!interaction.isChatInputCommand() && !('customId' in interaction)) {
+    if (!interaction.isChatInputCommand() && !('customId' in interaction)) {
         console.error('Input is not a command nor interaction.')
         return
     }
@@ -119,15 +121,15 @@ client.on(Events.InteractionCreate, async (interaction: Interaction<"cached">) =
 })
 
 client.on(Events.MessageReactionAdd, async (reaction: MessageReaction, user: User) => {
-	// Checks if a reaction is partial, and if so fetches the entire structure
+    // Checks if a reaction is partial, and if so fetches the entire structure
     if (reaction.partial) {
         try {
             await reaction.fetch()
-		} catch (error) {
+        } catch (error) {
             console.error('Something went wrong when fetching the message:', error)
-			return
-		}
-	}
+            return
+        }
+    }
 
     if (!(reaction.message.channel instanceof TextChannel)) {
         // DMs not supported
@@ -147,32 +149,32 @@ client.on(Events.MessageReactionAdd, async (reaction: MessageReaction, user: Use
                     .setDescription(`Task ready according to <@${user.id}>!`)
                     .setColor('#fd8732')
                     .setTimestamp()
-                
+
                 const channelName = (reaction.message.channel.name.match(/[a-z|A-Z]+/) || [])[0]
                 const derbyChannel = reaction.message.guild?.channels.cache.find((channel) => channel.name.endsWith(`${channelName}-derby`)) as TextChannel
                 if (derbyChannel) {
-                    derbyChannel.send({content: formattedNames, embeds: [embed]})
+                    derbyChannel.send({ content: formattedNames, embeds: [embed] })
                 } else {
                     console.error(`Found no channel named ${channelName}-derby. Unable to ping.`)
                 }
             }
             return
         }
-        
+
         restructureEmbeds(reaction, user, Reaction.Add)
     }
 })
 
 client.on(Events.MessageReactionRemove, async (reaction: MessageReaction, user: User) => {
-	// Checks if a reaction is partial, and if so fetches the entire structure
-	if (reaction.partial) {
-		try {
-			await reaction.fetch()
-		} catch (error) {
-			console.error('Something went wrong when fetching the message:', error)
-			return
-		}
-	}
+    // Checks if a reaction is partial, and if so fetches the entire structure
+    if (reaction.partial) {
+        try {
+            await reaction.fetch()
+        } catch (error) {
+            console.error('Something went wrong when fetching the message:', error)
+            return
+        }
+    }
 
     if (!(reaction.message.channel instanceof TextChannel)) {
         // DMs not supported

@@ -1,5 +1,5 @@
 import { AutocompleteInteraction } from "discord.js"
-import sanitize from "./sanitize.js"
+import sanitize from "./sanitize.ts"
 
 const REPOSITORY = "repository"
 const DEPLOY = "deploy"

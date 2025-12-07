@@ -1,13 +1,6 @@
-import { 
-    ActionRowBuilder, 
-    ButtonBuilder, 
-    ButtonInteraction, 
-    ButtonStyle, 
-    Embed, 
-    EmbedBuilder, 
-    EmbedField 
-} from "discord.js"
-import pages from "./commands.js"
+import type {  ButtonInteraction, Embed, EmbedField } from "discord.js"
+import { ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder } from 'discord.js'
+import pages from "./commands.ts"
 
 const commands = {
     syntax: "`/help command:name`\n",

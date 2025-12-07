@@ -1,4 +1,4 @@
-// Purpose: Configures the environment variables and exports them as a single object.
+// Configures the environment variables and exports them as a single object.
 import dotenv from 'dotenv'
 
 // Configures the environment variables

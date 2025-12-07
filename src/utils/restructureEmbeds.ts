@@ -1,10 +1,10 @@
 import { EmbedBuilder, MessageReaction, TextChannel, User } from "discord.js"
-import createEmbeds from "./createEmbeds.js"
-import { Reaction } from "../../interfaces.js"
-import getButtons from "./buttons.js"
-import getReactionsFromEmbedFields from "./getReactionsFromEmbedField.js"
-import react from "./react.js"
-import combineValues from "./combineValues.js"
+import createEmbeds from "./createEmbeds.ts"
+import { Reaction } from "#interfaces"
+import getButtons from "./buttons.ts"
+import getReactionsFromEmbedFields from "./getReactionsFromEmbedField.ts"
+import react from "./react.ts"
+import combineValues from "./combineValues.ts"
 
 export default async function restructureEmbeds(reaction: MessageReaction, user: User, action: Reaction) {
     const embeds = global.preppedTasks.get(reaction.message.channelId)

@@ -1,6 +1,6 @@
 import { ButtonInteraction, ChatInputCommandInteraction } from "discord.js"
-import { nextPage, previousPage } from "./preppedPage.js"
-import { nextPage as nextPageHelp, previousPage as previousPageHelp } from "./help.js"
+import { nextPage, previousPage } from "./preppedPage.ts"
+import { nextPage as nextPageHelp, previousPage as previousPageHelp } from "./help.ts"
 
 export default async function handleComponents(interaction: ButtonInteraction | ChatInputCommandInteraction, id: string | undefined) {    
     const buttonInteraction = interaction as ButtonInteraction

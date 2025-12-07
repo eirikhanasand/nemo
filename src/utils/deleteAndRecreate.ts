@@ -1,10 +1,10 @@
 import { EmbedBuilder, Message, PermissionsBitField, TextChannel } from "discord.js"
-import appendReaction from "./appendReaction.js"
-import combineValues from "./combineValues.js"
-import createEmbeds from "./createEmbeds.js"
-import getButtons from "./buttons.js"
-import react from "./react.js"
-import getReactionsFromEmbedFields from "./getReactionsFromEmbedField.js"
+import appendReaction from "./appendReaction.ts"
+import combineValues from "./combineValues.ts"
+import createEmbeds from "./createEmbeds.ts"
+import getButtons from "./buttons.ts"
+import react from "./react.ts"
+import getReactionsFromEmbedFields from "./getReactionsFromEmbedField.ts"
 
 export default async function deleteAndRecreate(channel: TextChannel) {
     const textChannel = channel as TextChannel

@@ -1,5 +1,6 @@
 services:
   nemo:
+    container_name: nemo
     restart: always
     build:
       context: .

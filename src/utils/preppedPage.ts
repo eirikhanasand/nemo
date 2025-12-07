@@ -1,7 +1,7 @@
 import { ButtonInteraction, Embed } from "discord.js"
-import getButtons from "./buttons.js"
-import getReactionsFromEmbedFields from "./getReactionsFromEmbedField.js"
-import react from "./react.js"
+import getButtons from "./buttons.ts"
+import getReactionsFromEmbedFields from "./getReactionsFromEmbedField.ts"
+import react from "./react.ts"
 
 export async function nextPage(interaction: ButtonInteraction) {
     const page = extractPageNumberFromEmbed(interaction.message.embeds[0])
